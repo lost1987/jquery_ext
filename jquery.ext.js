@@ -2,7 +2,7 @@
  * Created by Administrator on 14-3-5.
  * @author buhuan
  * jquery 扩展类
-**/
+ **/
 
 (function($){
 
@@ -14,37 +14,37 @@
          * @param len 数字的长度(位数) 默认10
          * @param max 数字的最大值限制
          */
-       form_validate_onlyNumbers:function(len,max){
-             if(len == undefined)len = 10;
-             if(max == undefined)max = 2147483657;
-             $(this).each(function(){
-                 var element = $(this);
-                 $(this).keydown(function(e){
+        form_validate_onlyNumbers:function(len,max){
+            if(len == undefined)len = 10;
+            if(max == undefined)max = 2147483657;
+            $(this).each(function(){
+                var element = $(this);
+                $(this).keydown(function(e){
 
-                     var evt = e || window.event;
-                     if( (
-                             evt.keyCode < 48
-                             || (evt.keyCode >57 && evt.keyCode < 96)
-                             || evt.keyCode > 105
-                             || element.val().length >= len
-                             || parseInt(element.val()+"7") >= max
-                             || element.val().substr(0,1) == '0'
-                         )
-                             && evt.keyCode != 8 && evt.keyCode != 9 && evt.keyCode != 46 && evt.keyCode != 37 &&  evt.keyCode != 39
-                       ){
-                         element.empty();
-                         evt.preventDefault();
-                         return false;
-                     }
-                 });
-             })
-       },
+                    var evt = e || window.event;
+                    if( (
+                        evt.keyCode < 48
+                            || (evt.keyCode >57 && evt.keyCode < 96)
+                            || evt.keyCode > 105
+                            || element.val().length >= len
+                            || parseInt(element.val()+"7") >= max
+                            || element.val().substr(0,1) == '0'
+                        )
+                        && evt.keyCode != 8 && evt.keyCode != 9 && evt.keyCode != 46 && evt.keyCode != 37 &&  evt.keyCode != 39
+                        ){
+                        element.empty();
+                        evt.preventDefault();
+                        return false;
+                    }
+                });
+            })
+        },
 
         /**
          * 去除文本框字串里所有的空格 并返回处理后的字符串
          * (只支持单个文本框)
          */
-       form_validate_trimVal:function(){
+        form_validate_trimVal:function(){
             if($(this).length > 1){
                 alert('此方法只支持单个HTML元素');
                 return;
@@ -52,7 +52,7 @@
 
             var val = $(this).val().replace(/\s+/g,'');
             return val;
-       }
+        }
     });
 
 
@@ -69,13 +69,37 @@
         },
 
         in_array:function(val,array){
-                var is_in_array = false;
-                for(var i = 0; i < array.length; i++){
-                        if(array[i] == val){
-                            is_in_array = true;break;
-                        }
+            var is_in_array = false;
+            for(var i = 0; i < array.length; i++){
+                if(array[i] == val){
+                    is_in_array = true;break;
                 }
-                return is_in_array;
+            }
+            return is_in_array;
+        },
+
+        /**
+         * 去除数组的重复元素  只适用一维数组 1,2,1
+         */
+        array_unique:function(array){
+              var single_array = [];//存放不重复的元素
+              var repeat_array = []; //存放重复的元素
+              for(var i = 0 ; i < array.length; i++){
+                  var count = 0;
+                  for(var k = 0 ; k < array.length ; k++){
+                      if(array[i] == array[k])count++;
+                  }
+                  if(count > 1 && !$.in_array(array[i],repeat_array)){
+                      repeat_array.push(array[i]);
+                  }
+                  else if(count <= 1) single_array.push(array[i]);
+              }
+
+              for(var i in repeat_array){
+                  single_array.push(repeat_array[i]);
+              }
+
+              return single_array;
         }
 
         ,
@@ -89,9 +113,9 @@
             if(height == undefined) height = 100;
             var msg_div = $("#dialog_msg");
             if(msg_div[0] === undefined){//判断元素是否存在
-                  var msg_str = '<div id="dialog_msg"><center><p><b>xxxx</b></p></center></div>';
-                  msg_div = $.strToDom(msg_str);
-                  $("body").append(msg_div);
+                var msg_str = '<div id="dialog_msg"><center><p><b>xxxx</b></p></center></div>';
+                msg_div = $.strToDom(msg_str);
+                $("body").append(msg_div);
             }
 
             $("#dialog_msg").find('b').html(message);
@@ -109,13 +133,13 @@
          * @return json 返回删除后的json数组
          */
         delete_Json_Object_By_Key_Value:function(key,value,json){
-              $(json).each(function(index){
-                  if(this[key] == value){
-                        json.splice(index,1);
-                        return false;
-                  }
-              })
-              return json;
+            $(json).each(function(index){
+                if(this[key] == value){
+                    json.splice(index,1);
+                    return false;
+                }
+            })
+            return json;
         },
 
         /**
@@ -129,7 +153,7 @@
             var obj = null;
             $(jsonArray).each(function(index){
                 if(this[key] == value){
-                   obj = this;
+                    obj = this;
                 }
             })
             return obj;
@@ -171,10 +195,10 @@
 
             switch(trim){
                 case true:
-                           return str1.replace(/\s+/g,'') == str2.replace(/\s+/g,'');
+                    return str1.replace(/\s+/g,'') == str2.replace(/\s+/g,'');
 
                 case false:
-                           return str1 == str2;
+                    return str1 == str2;
                 default:
             }
         },
@@ -317,7 +341,7 @@
          * @param time int 时间戳
          * @param formatString YYYY-MM-DD | YYYY-MM-DD HH:NN:SS
          */
-         d_timeToDate:function(time,formatString){
+        d_timeToDate:function(time,formatString){
             if(formatString == undefined) formatString = 'YYYY-MM-DD';
 
             var dateString = null;
@@ -342,7 +366,7 @@
             }
 
             return dateString;
-         },
+        },
 
 
         /**

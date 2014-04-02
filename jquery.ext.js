@@ -7,6 +7,26 @@
 (function($){
 
     $.fn.extend({
+	
+		/**
+         * 全选/取消全选
+         * @param rel   包裹着需要全选的checkbox的rel扩展属性名
+         * 对控制节点使用该方法
+         */
+        checkall:function(rel){
+
+            $(this).click(function(){
+                if(this.checked){
+                    $("body").find("input[rel='"+rel+"']").each(function(){
+                        this.checked = true;
+                    });
+                }else{
+                    $("body").find("input[rel='"+rel+"']").each(function(){
+                        this.checked = false;
+                    });
+                }
+            });
+        },
 
         /**
          * 文本框强制只能输入数字(仅支持整型)
@@ -57,6 +77,26 @@
 
 
     $.extend({
+		  browser:{
+				  screen_width:function(){
+					  return $(window).width();
+				  },
+				  screen_height:function(){
+					  return $(window).height();
+				  },
+				  page_width:function(){
+					  return $(document).width();
+				  },
+				  page_height:function(){
+					  return $(document).height();
+				  },
+				  scroll_top:function(){
+					  return $(document).scrollTop();
+				  },
+				  scroll_left:function(){
+					  return $(document).scrollLeft();
+				  }
+         },
         /**
          * 将html字符串转换为jquery对象
          * @param str

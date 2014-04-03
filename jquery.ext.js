@@ -72,7 +72,94 @@
 
             var val = $(this).val().replace(/\s+/g,'');
             return val;
-        }
+        },
+		
+		
+		  /**
+         * 兼容 ： chrome、IE9 ，firefox ，遨游
+         * 让元素飞
+         *
+         * @param opt
+         * {
+         *     scroll_additional_top:0  //垂直滚动条的增量 弥补offsetTop获取的差值
+         *     element_type:"table"  //元素类型  table|div 注：当元素是table的时候 使用该函数的节点一定得是tr 比如 $("tr").eq(0).fly(opt)
+         * }
+         * 测试用例：$("table").eq(0).find('tr').eq(1).fly({
+         *              scroll_additional_top:50,
+         *              element_type:'table'
+         *          });
+         */
+        fly:function(opt){
+                var _this,
+                    default_options,
+                    options,
+                    _source_width,//初始宽度
+                    _source_height,//初始高度
+                    _top_to_fly,//滚动条卷去的高度
+                    _clone,//克隆对象
+                    _source_offset_top,//初始offset top
+                    _source_next_tr; //初始当前节点的下一组tr对象
+
+
+
+                 _this = $(this);
+                 default_options = {element_type:"div",scroll_additional_top:0};
+                 options = $.extend({},default_options,opt);
+                 _source_width = _this.width();
+                 _source_height = _this.height();
+                 _top_to_fly =  _source_offset_top = _this.offset().top + options.scroll_additional_top;//到达此高度时元素起飞
+
+                //元素类型初始化
+                switch(options.element_type){
+                    case  'table':
+                        _source_next_tr = _this.next();//在飞起来之前，得到该tr的下一个tr 当元素起飞后 重新设置变形的td或th
+                        //复制一个当前的克隆节点 防止因为缺失元素导致页面变形
+                        var _clone = $("<tr>").css('width',_this.css('width')).css('height',_this.css('height'))
+                            .css('position',_this.css('position'));
+                        _this.children().each(function(){
+                            var _th = $("<th>").css('width',$(this).width()+'px')
+                                .css('height',$(this).height()+'px')
+                                .css('line-height',$(this).css('line-height'))
+                                .html($(this).html());
+                            _clone.append(_th);
+                        });
+
+                        break;
+                    case  'div':   //后续加入
+                        break;
+                }
+
+                //监听滚动条事件
+                var _isfly = false;//确保计算只执行一次 当有变化的时候才再执行计算
+                $(window).bind('scroll',function(){
+                    var scrollTop = $.browser.scroll_top();
+                    if(scrollTop > _top_to_fly && !_isfly){
+                        _isfly = true;
+
+                        _this.before(_clone);
+
+                        //此时起飞
+                        _this.css('position','fixed')
+                            .css('top',0)
+                            .css('width',_source_width+'px')
+                            .css('height',_source_height+'px');
+
+                        if(options.element_type == 'table'){//进行table独有的逻辑
+                            $(_source_next_tr).children().each(function(i){
+                                _this.children().eq(i).css('width',$(this).width()+'px')
+                                                       .css('height',$(this).height()+'px')
+                            });
+                        }
+                    }else if(scrollTop <= _top_to_fly && _isfly) {
+                        _isfly = false;
+                        _this.css('position','static');
+
+                        if(options.element_type == 'table'){//进行table独有的逻辑
+                              _clone.remove();
+                        }
+                    }
+                });
+             }
     });
 
 

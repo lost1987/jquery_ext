@@ -184,6 +184,73 @@
 					  return $(document).scrollLeft();
 				  }
          },
+		 
+		 
+		  /**
+         * 在浏览器右边显示回顶部的悬浮层
+         * opt:{
+         *  top :  悬浮窗距离浏览器窗口下部的高度
+         *  point_name: 锚点的名字 不带#号
+         *  element: 可以是html元素字串也可以是文本字串
+         *  width
+         *  height
+         *  backgroundColor
+         *  border
+         *  scrollTop: //当滚动条卷去这个高度的时候  显示回顶部按钮
+         * }
+         *
+         * @return JQDomObject(self)
+         *
+             * 用例$.toTopTip({
+                      top :  40,
+                      point_name: 'goTop',//页面上必须要有name为goTop的锚点
+                      scrollTop : '200',
+                      label: "<b>↑</b>"
+                    });
+         */
+         toTopTip:function(opt){
+                var default_options,
+                    options,
+                    _tip;
+
+                if(opt == undefined || !opt.hasOwnProperty('point_name') || !opt.hasOwnProperty('scrollTop')){
+                    alert('请设置`point_name` , `scrollTop`属性 否则无法正常运行');
+                    return;
+                }
+
+                default_options = {top: $.browser.screen_height()-200,point_name:"",element:"回顶部",width:30,height:20,backgroundColor:"white",border:"1px solid gray"};
+                if(opt.hasOwnProperty('top'))opt.top = $.browser.screen_height() - opt.top;
+                options = $.extend({},default_options,opt);
+
+                _tip = $("<div>").css('position','fixed')
+                    .css('width',options.width+'px')
+                    .css('height',options.height+'px')
+                    .css('background-color',options.backgroundColor)
+                    .css('border',options.border)
+                    .css('text-align','center')
+                    .css('verticle-align','middle')
+                    .css('top',options.top+'px')
+                    .css('left', ($.browser.screen_width()-options.width-2)+'px')
+                    .html('<a href="#'+options.point_name+'">'+options.element+'</a>');
+
+                _tip.hide();
+                $("body").append(_tip);
+
+                var _display = false;
+                $(window).bind('scroll',function(){
+                        var _scrollTop = $.browser.scroll_top();
+                        if(_scrollTop > options.scrollTop && !_display){
+                            _display = true;
+                            _tip.fadeIn(100);
+                        }else if(_scrollTop <= options.scrollTop && _display){
+                            _display = false
+                            _tip.hide();
+                        }
+                });
+
+                return _tip;
+         },
+
         /**
          * 将html字符串转换为jquery对象
          * @param str

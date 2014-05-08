@@ -7,8 +7,8 @@
 (function($){
 
     $.fn.extend({
-	
-		/**
+
+        /**
          * 全选/取消全选
          * @param rel   包裹着需要全选的checkbox的rel扩展属性名
          * 对控制节点使用该方法
@@ -38,23 +38,15 @@
             if(len == undefined)len = 10;
             if(max == undefined)max = 2147483657;
             $(this).each(function(){
-                var element = $(this);
-                $(this).keydown(function(e){
+                $(this).keyup(function(e){
 
-                    var evt = e || window.event;
-                    if( (
-                        evt.keyCode < 48
-                            || (evt.keyCode >57 && evt.keyCode < 96)
-                            || evt.keyCode > 105
-                            || element.val().length >= len
-                            || parseInt(element.val()+"7") >= max
-                            || element.val().substr(0,1) == '0'
-                        )
-                        && evt.keyCode != 8 && evt.keyCode != 9 && evt.keyCode != 46 && evt.keyCode != 37 &&  evt.keyCode != 39
-                        ){
-                        element.empty();
-                        evt.preventDefault();
-                        return false;
+                    var value = $(this).val();
+                    if(value.length > len){
+                        $(this).val(value.substr(0,len));
+                    }else{
+                        if(parseInt(value) > max ){
+                            $(this).val(value.substr(0,value.length-1));
+                        }
                     }
                 });
             })
@@ -73,9 +65,9 @@
             var val = $(this).val().replace(/\s+/g,'');
             return val;
         },
-		
-		
-		  /**
+
+
+        /**
          * 兼容 ： chrome、IE9 ，firefox ，遨游
          * 让元素飞
          *
@@ -90,103 +82,103 @@
          *          });
          */
         fly:function(opt){
-                var _this,
-                    default_options,
-                    options,
-                    _source_width,//初始宽度
-                    _source_height,//初始高度
-                    _top_to_fly,//滚动条卷去的高度
-                    _clone,//克隆对象
-                    _source_offset_top,//初始offset top
-                    _source_next_tr; //初始当前节点的下一组tr对象
+            var _this,
+                default_options,
+                options,
+                _source_width,//初始宽度
+                _source_height,//初始高度
+                _top_to_fly,//滚动条卷去的高度
+                _clone,//克隆对象
+                _source_offset_top,//初始offset top
+                _source_next_tr; //初始当前节点的下一组tr对象
 
 
 
-                 _this = $(this);
-                 default_options = {element_type:"div",scroll_additional_top:0};
-                 options = $.extend({},default_options,opt);
-                 _source_width = _this.width();
-                 _source_height = _this.height();
-                 _top_to_fly =  _source_offset_top = _this.offset().top + options.scroll_additional_top;//到达此高度时元素起飞
+            _this = $(this);
+            default_options = {element_type:"div",scroll_additional_top:0};
+            options = $.extend({},default_options,opt);
+            _source_width = _this.width();
+            _source_height = _this.height();
+            _top_to_fly =  _source_offset_top = _this.offset().top + options.scroll_additional_top;//到达此高度时元素起飞
 
-                //元素类型初始化
-                switch(options.element_type){
-                    case  'table':
-                        _source_next_tr = _this.next();//在飞起来之前，得到该tr的下一个tr 当元素起飞后 重新设置变形的td或th
-                        //复制一个当前的克隆节点 防止因为缺失元素导致页面变形
-                        var _clone = $("<tr>").css('width',_this.css('width')).css('height',_this.css('height'))
-                            .css('position',_this.css('position'));
-                        _this.children().each(function(){
-                            var _th = $("<th>").css('width',$(this).width()+'px')
+            //元素类型初始化
+            switch(options.element_type){
+                case  'table':
+                    _source_next_tr = _this.next();//在飞起来之前，得到该tr的下一个tr 当元素起飞后 重新设置变形的td或th
+                    //复制一个当前的克隆节点 防止因为缺失元素导致页面变形
+                    var _clone = $("<tr>").css('width',_this.css('width')).css('height',_this.css('height'))
+                        .css('position',_this.css('position'));
+                    _this.children().each(function(){
+                        var _th = $("<th>").css('width',$(this).width()+'px')
+                            .css('height',$(this).height()+'px')
+                            .css('line-height',$(this).css('line-height'))
+                            .html($(this).html());
+                        _clone.append(_th);
+                    });
+
+                    break;
+                case  'div':   //后续加入
+                    break;
+            }
+
+            //监听滚动条事件
+            var _isfly = false;//确保计算只执行一次 当有变化的时候才再执行计算
+            $(window).bind('scroll',function(){
+                var scrollTop = $.browser.scroll_top();
+                if(scrollTop > _top_to_fly && !_isfly){
+                    _isfly = true;
+
+                    _this.before(_clone);
+
+                    //此时起飞
+                    _this.css('position','fixed')
+                        .css('top',0)
+                        .css('width',_source_width+'px')
+                        .css('height',_source_height+'px');
+
+                    if(options.element_type == 'table'){//进行table独有的逻辑
+                        $(_source_next_tr).children().each(function(i){
+                            _this.children().eq(i).css('width',$(this).width()+'px')
                                 .css('height',$(this).height()+'px')
-                                .css('line-height',$(this).css('line-height'))
-                                .html($(this).html());
-                            _clone.append(_th);
                         });
-
-                        break;
-                    case  'div':   //后续加入
-                        break;
-                }
-
-                //监听滚动条事件
-                var _isfly = false;//确保计算只执行一次 当有变化的时候才再执行计算
-                $(window).bind('scroll',function(){
-                    var scrollTop = $.browser.scroll_top();
-                    if(scrollTop > _top_to_fly && !_isfly){
-                        _isfly = true;
-
-                        _this.before(_clone);
-
-                        //此时起飞
-                        _this.css('position','fixed')
-                            .css('top',0)
-                            .css('width',_source_width+'px')
-                            .css('height',_source_height+'px');
-
-                        if(options.element_type == 'table'){//进行table独有的逻辑
-                            $(_source_next_tr).children().each(function(i){
-                                _this.children().eq(i).css('width',$(this).width()+'px')
-                                                       .css('height',$(this).height()+'px')
-                            });
-                        }
-                    }else if(scrollTop <= _top_to_fly && _isfly) {
-                        _isfly = false;
-                        _this.css('position','static');
-
-                        if(options.element_type == 'table'){//进行table独有的逻辑
-                              _clone.remove();
-                        }
                     }
-                });
-             }
+                }else if(scrollTop <= _top_to_fly && _isfly) {
+                    _isfly = false;
+                    _this.css('position','static');
+
+                    if(options.element_type == 'table'){//进行table独有的逻辑
+                        _clone.remove();
+                    }
+                }
+            });
+        }
     });
 
 
     $.extend({
-		  browser:{
-				  screen_width:function(){
-					  return $(window).width();
-				  },
-				  screen_height:function(){
-					  return $(window).height();
-				  },
-				  page_width:function(){
-					  return $(document).width();
-				  },
-				  page_height:function(){
-					  return $(document).height();
-				  },
-				  scroll_top:function(){
-					  return $(document).scrollTop();
-				  },
-				  scroll_left:function(){
-					  return $(document).scrollLeft();
-				  }
-         },
-		 
-		 
-		  /**
+        browser:{
+            screen_width:function(){
+                return $(window).width();
+            },
+            screen_height:function(){
+                return $(window).height();
+            },
+            page_width:function(){
+                return $(document).width();
+            },
+            page_height:function(){
+                return $(document).height();
+            },
+            scroll_top:function(){
+                return $(document).scrollTop();
+            },
+            scroll_left:function(){
+                return $(document).scrollLeft();
+            }
+        },
+
+
+        /**
          * 在浏览器右边显示回顶部的悬浮层
          * opt:{
          *  top :  悬浮窗距离浏览器窗口下部的高度
@@ -201,55 +193,55 @@
          *
          * @return JQDomObject(self)
          *
-             * 用例$.toTopTip({
+         * 用例$.toTopTip({
                       top :  40,
                       point_name: 'goTop',//页面上必须要有name为goTop的锚点
                       scrollTop : '200',
                       label: "<b>↑</b>"
                     });
          */
-         toTopTip:function(opt){
-                var default_options,
-                    options,
-                    _tip;
+        toTopTip:function(opt){
+            var default_options,
+                options,
+                _tip;
 
-                if(opt == undefined || !opt.hasOwnProperty('point_name') || !opt.hasOwnProperty('scrollTop')){
-                    alert('请设置`point_name` , `scrollTop`属性 否则无法正常运行');
-                    return;
+            if(opt == undefined || !opt.hasOwnProperty('point_name') || !opt.hasOwnProperty('scrollTop')){
+                alert('请设置`point_name` , `scrollTop`属性 否则无法正常运行');
+                return;
+            }
+
+            default_options = {top: $.browser.screen_height()-200,point_name:"",element:"回顶部",width:30,height:20,backgroundColor:"white",border:"1px solid gray"};
+            if(opt.hasOwnProperty('top'))opt.top = $.browser.screen_height() - opt.top;
+            options = $.extend({},default_options,opt);
+
+            _tip = $("<div>").css('position','fixed')
+                .css('width',options.width+'px')
+                .css('height',options.height+'px')
+                .css('background-color',options.backgroundColor)
+                .css('border',options.border)
+                .css('text-align','center')
+                .css('verticle-align','middle')
+                .css('top',options.top+'px')
+                .css('left', ($.browser.screen_width()-options.width-2)+'px')
+                .html('<a href="#'+options.point_name+'">'+options.element+'</a>');
+
+            _tip.hide();
+            $("body").append(_tip);
+
+            var _display = false;
+            $(window).bind('scroll',function(){
+                var _scrollTop = $.browser.scroll_top();
+                if(_scrollTop > options.scrollTop && !_display){
+                    _display = true;
+                    _tip.fadeIn(100);
+                }else if(_scrollTop <= options.scrollTop && _display){
+                    _display = false
+                    _tip.hide();
                 }
+            });
 
-                default_options = {top: $.browser.screen_height()-200,point_name:"",element:"回顶部",width:30,height:20,backgroundColor:"white",border:"1px solid gray"};
-                if(opt.hasOwnProperty('top'))opt.top = $.browser.screen_height() - opt.top;
-                options = $.extend({},default_options,opt);
-
-                _tip = $("<div>").css('position','fixed')
-                    .css('width',options.width+'px')
-                    .css('height',options.height+'px')
-                    .css('background-color',options.backgroundColor)
-                    .css('border',options.border)
-                    .css('text-align','center')
-                    .css('verticle-align','middle')
-                    .css('top',options.top+'px')
-                    .css('left', ($.browser.screen_width()-options.width-2)+'px')
-                    .html('<a href="#'+options.point_name+'">'+options.element+'</a>');
-
-                _tip.hide();
-                $("body").append(_tip);
-
-                var _display = false;
-                $(window).bind('scroll',function(){
-                        var _scrollTop = $.browser.scroll_top();
-                        if(_scrollTop > options.scrollTop && !_display){
-                            _display = true;
-                            _tip.fadeIn(100);
-                        }else if(_scrollTop <= options.scrollTop && _display){
-                            _display = false
-                            _tip.hide();
-                        }
-                });
-
-                return _tip;
-         },
+            return _tip;
+        },
 
         /**
          * 将html字符串转换为jquery对象
@@ -276,24 +268,24 @@
          * 去除数组的重复元素  只适用一维数组 1,2,1
          */
         array_unique:function(array){
-              var single_array = [];//存放不重复的元素
-              var repeat_array = []; //存放重复的元素
-              for(var i = 0 ; i < array.length; i++){
-                  var count = 0;
-                  for(var k = 0 ; k < array.length ; k++){
-                      if(array[i] == array[k])count++;
-                  }
-                  if(count > 1 && !$.in_array(array[i],repeat_array)){
-                      repeat_array.push(array[i]);
-                  }
-                  else if(count <= 1) single_array.push(array[i]);
-              }
+            var single_array = [];//存放不重复的元素
+            var repeat_array = []; //存放重复的元素
+            for(var i = 0 ; i < array.length; i++){
+                var count = 0;
+                for(var k = 0 ; k < array.length ; k++){
+                    if(array[i] == array[k])count++;
+                }
+                if(count > 1 && !$.in_array(array[i],repeat_array)){
+                    repeat_array.push(array[i]);
+                }
+                else if(count <= 1) single_array.push(array[i]);
+            }
 
-              for(var i in repeat_array){
-                  single_array.push(repeat_array[i]);
-              }
+            for(var i in repeat_array){
+                single_array.push(repeat_array[i]);
+            }
 
-              return single_array;
+            return single_array;
         }
 
         ,
